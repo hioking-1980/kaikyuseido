@@ -1,1 +1,185 @@
-ここにscript.jsのコードを貼り付け
+/* リセットと基本設定 */
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    margin: 0;
+    padding: 0;
+    /* サイト全体の背景色 */
+    background-color: #F8F8F8; 
+    color: #333;
+    line-height: 1.6;
+}
+
+/* ヘッダーセクション */
+.header {
+    padding: 20px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.header .subtitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.info-block {
+    margin: 15px 0;
+}
+
+.info-block p {
+    margin: 5px 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.info-block .large-number {
+    font-size: 20px;
+    font-weight: 900;
+    color: #000;
+}
+
+/* OpenSea ボタンの再現 */
+.opensea-button {
+    display: inline-block;
+    background-color: #00BFFF; /* 鮮やかな青色 */
+    color: white;
+    font-size: 20px;
+    font-weight: 900;
+    text-decoration: none;
+    padding: 15px 30px;
+    margin: 20px auto;
+    /* 大きな角丸の再現 */
+    border-radius: 50px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.opensea-button:hover {
+    opacity: 0.9;
+}
+
+.description-text {
+    font-size: 14px;
+    color: #555;
+    margin-top: 10px;
+    padding: 0 15px;
+}
+
+/* 階級コンテナとブロック */
+#rank-container {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+}
+
+.rank-block {
+    background-color: #FFF;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    /* 控えめなbox-shadowの再現 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+}
+
+/* 階級ヘッダー（色分けされた部分） */
+.rank-header {
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.rank-header h2 {
+    font-size: 24px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.rank-header .rank-range {
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+/* 階級画像と説明文セクション */
+.rank-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.rank-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%; /* 円形に */
+    margin-bottom: 15px;
+    border-style: solid;
+    border-width: 5px; /* ボーダーの太さ */
+}
+
+/* 階級画像ごとのボーダー色の指定 */
+.rank-image.長老 { border-color: #FFD700; /* 黄色 */ }
+.rank-image.名主 { border-color: #4169E1; /* 青 */ }
+.rank-image.領主 { border-color: #FFA500; /* オレンジ */ }
+.rank-image.しょう屋 { border-color: #3CB371; /* 緑 */ }
+.rank-image.村長 { border-color: #4169E1; /* 濃い青 */ }
+.rank-image.その他 { border-color: #DC143C; /* 赤 */ }
+
+.rank-description {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+/* ユーザーリスト */
+.user-list {
+    list-style: none;
+    padding: 0 20px 20px;
+    margin: 0;
+    text-align: center;
+}
+
+.user-list li {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #DDD;
+}
+
+.user-list li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* 階級ブロックごとの背景色の適用 */
+.bg-長老 { background-color: #8B008B; }
+.bg-名主 { background-color: #4169E1; }
+.bg-領主 { background-color: #DAA520; }
+.bg-しょう屋 { background-color: #3CB371; }
+.bg-村長 { background-color: #FF8C00; }
+.bg-その他 { background-color: #DC143C; }
+
+/* デスクトップ表示用（最小限の調整） */
+@media (min-width: 768px) {
+    .header {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    #rank-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}ここにscript.jsのコードを貼り付け
