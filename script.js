@@ -1,7 +1,10 @@
-// 【重要】ここに、ご提示いただいたCSVの直リンクURLを貼り付けます
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?output=csv'; 
+// 【重要】階級ランキングデータのCSV直リンクURL（元のシート、gid=0を想定）
+const USER_RANKING_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=0&single=true&output=csv'; 
 
-// 階級の定義とデータ (前回と同じ確定版)
+// 【重要】ホルダー数フロア価格シートのCSV直リンクURL（今回ご提示いただいたURL）
+const INFO_DATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=1072760862&single=true&output=csv'; 
+
+// 階級の定義とデータ (確定版)
 const RANKS = [
     { name: '長老', minPoints: 50, maxPoints: Infinity, range: '50点以上', image: 'images/階級-06.jpg', colorClass: 'bg-長老', description: '最も偉い階級で、とにかく頭を下げなければならない。' },
     { name: '名主', minPoints: 40, maxPoints: 49, range: '40〜49点', image: 'images/階級-08.jpg', colorClass: 'bg-名主', description: 'かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有' },
@@ -11,32 +14,47 @@ const RANKS = [
     { name: 'その他', minPoints: 1, maxPoints: 9, range: '1〜9点', image: 'images/その他.png', colorClass: 'bg-その他', description: '' }
 ];
 
-// CSVデータを解析してユーザー配列を生成する関数
-function parseCSV(csv) {
-    const lines = csv.split('\n').filter(line => line.trim() !== ''); // 空行を除去
-    if (lines.length === 0) return [];
+// CSVデータを解析し、データ形式に応じて分類して返す関数
+function parseCSV(csv, isRankingData) {
+    const lines = csv.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) return isRankingData ? [] : {};
     
-    // ヘッダー行を解析 (名前, 保有個数)
-    const headers = lines[0].split(',').map(h => h.trim());
-    const nameIndex = headers.indexOf('名前');
-    const pointsIndex = headers.indexOf('保有個数');
-    
-    if (nameIndex === -1 || pointsIndex === -1) {
-        console.error("CSVヘッダーに '名前' または '保有個数' が見つかりません。");
-        return [];
-    }
-
-    const users = [];
-    for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
-        if (values.length > pointsIndex) {
-            users.push({
-                '名前': values[nameIndex],
-                '保有個数': values[pointsIndex]
-            });
+    // ユーザーランキングデータ（ヘッダー: 名前, 保有個数）の解析
+    if (isRankingData) {
+        const headers = lines[0].split(',').map(h => h.trim());
+        const nameIndex = headers.indexOf('名前');
+        const pointsIndex = headers.indexOf('保有個数');
+        
+        if (nameIndex === -1 || pointsIndex === -1) {
+            console.error("ランキングデータCSVヘッダーに '名前' または '保有個数' が見つかりません。");
+            return [];
         }
+
+        const users = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(v => v.trim());
+            if (values.length > pointsIndex && values[nameIndex] && values[pointsIndex]) {
+                users.push({ '名前': values[nameIndex], '保有個数': values[pointsIndex] });
+            }
+        }
+        return users;
+    } 
+    
+    // ホルダー数/フロア価格データ（セル位置: B3, B4）の解析
+    else {
+        // スプレッドシートのB3, B4の値を取得 (CSVでは3行目, 4行目の2列目)
+        if (lines.length >= 4) { 
+            const holderRow = lines[2].split(',').map(v => v.trim()); // B3の行
+            const floorRow = lines[3].split(',').map(v => v.trim());   // B4の行
+            
+            // B列（インデックス1）の値を取得
+            return {
+                holderCount: holderRow[1] || '',
+                floorPrice: floorRow[1] || ''
+            };
+        }
+        return {};
     }
-    return users;
 }
 
 // ユーザーデータを階級に分類する関数
@@ -64,7 +82,7 @@ function classifyUsers(users) {
     return classifiedData;
 }
 
-// HTML要素を生成して挿入する関数
+// HTML要素を生成して挿入する関数 (完全版)
 function renderRanks(classifiedData) {
     const container = document.getElementById('rank-container');
     container.innerHTML = ''; 
@@ -102,3 +120,60 @@ function renderRanks(classifiedData) {
         userList.className = 'user-list';
         
         if (rankData.users.length > 0) {
+            rankData.users.forEach(user => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${user.name} (${user.points}点)`;
+                userList.appendChild(listItem);
+            });
+        } else {
+             const listItem = document.createElement('li');
+             listItem.textContent = '該当者なし';
+             listItem.style.color = '#AAA';
+             userList.appendChild(listItem);
+        }
+        
+        content.appendChild(userList);
+        rankBlock.appendChild(content);
+
+        container.appendChild(rankBlock);
+    });
+}
+
+// データ取得と初期化 (fetch APIを使用)
+async function init() {
+    // 1. ユーザーランキングデータの取得とレンダリング
+    try {
+        const userRankingResponse = await fetch(USER_RANKING_CSV_URL);
+        if (userRankingResponse.ok) {
+            const userCsvText = await userRankingResponse.text();
+            const users = parseCSV(userCsvText, true); // true: ランキングデータ
+            const classifiedData = classifyUsers(users);
+            renderRanks(classifiedData);
+        } else {
+            console.error("ユーザーランキングデータの取得に失敗しました。");
+        }
+    } catch (error) {
+        console.error("ユーザーランキングデータの処理中にエラーが発生しました:", error);
+    }
+    
+    // 2. ホルダー数/フロア価格データの取得とトップ表示の更新
+    try {
+        const infoDataResponse = await fetch(INFO_DATA_CSV_URL);
+        if (infoDataResponse.ok) {
+            const infoCsvText = await infoDataResponse.text();
+            const infoData = parseCSV(infoCsvText, false); // false: 情報データ
+            
+            if (infoData.holderCount && infoData.floorPrice) {
+                // HTML要素を更新
+                document.getElementById('holder-count').textContent = infoData.holderCount + '人';
+                document.getElementById('floor-price').textContent = infoData.floorPrice + 'ETH';
+            }
+        } else {
+            console.error("情報データの取得に失敗しました。");
+        }
+    } catch (error) {
+        console.error("情報データの処理中にエラーが発生しました:", error);
+    }
+}
+
+window.addEventListener('DOMContentLoaded', init);
