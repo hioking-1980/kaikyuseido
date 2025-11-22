@@ -1,18 +1,14 @@
-// Google Sheetsの公開CSVリンク (最新のGIDを反映)
-const RANKING_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=589878966&single=true&output=csv"; 
-const INFO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=1072760862&single=true&output=csv"; 
+// Google Sheetsの公開CSVリンク (短縮版URLを反映)
+const RANKING_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=589878966&output=csv"; 
+const INFO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=1072760862&output=csv"; 
 
-// 階級の定義とデータ
+// 階級の定義とデータ (指定されたファイル名と拡張子に修正)
 const RANK_DETAILS = {
-    "長老": { min: 50, max: Infinity, desc: "最も偉い階級で、とにかく頭を下げなければならない。", img: "階級-06.jpg" },
-    "名主": { min: 40, max: 49, desc: "かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有", img: "階級-08.jpg" },
-    "領主": { min: 30, max: 39, desc: "とても高貴な位であり、キャビアや高級和牛などをいつも食べている", img: "階級-07.jpg" },
+    "長老": { min: 50, max: Infinity, desc: "最も偉い階級で、とにかく頭を下げなければならない。", img: "choro-06.png" }, // 修正済み
+    "名主": { min: 40, max: 49, desc: "かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有", img: "meish-08.png" }, // 修正済み
+    "領主": { min: 30, max: 39, desc: "とても高貴な位であり、キャビアや高級和牛などをいつも食べている", img: "ryoushu-07.png" }, // 修正済み
     "しょう屋": { min: 20, max: 29, desc: "かなりいいものを食べられるくらいの位で豊かな感じ", img: "shouya-09.png" },
-    "村長": { min: 10, max: 19, desc: "村人から挨拶をされるくらい、ちょっとだけ偉い。", img: "階級-10.jpg" }
-};
-
-let Ranks = {
-    "長老": [], "名主": [], "領主": [], "しょう屋": [], "村長": []
+    "村長": { min: 10, max: 19, desc: "村人から挨拶をされるくらい、ちょっとだけ偉い。", img: "soncho-10.png" } // 修正済み
 };
 
 // --- データ処理関数 (CSVを解析する) ---
@@ -23,16 +19,23 @@ function parseCSV(csv, isRankingData) {
     // ユーザーランキングデータ（ヘッダー: 名前, 保有個数）の解析
     if (isRankingData) {
         const headers = lines[0].split(',').map(h => h.trim());
-        const nameIndex = headers.indexOf('名前');
-        const pointsIndex = headers.indexOf('保有個数');
+        // '氏名'や'名前'、'保有点数'や'保有個数'など、複数のパターンに対応
+        const nameIndex = headers.findIndex(h => h === '氏名' || h === '名前');
+        const pointsIndex = headers.findIndex(h => h === '保有点数' || h === '保有個数');
         
-        if (nameIndex === -1 || pointsIndex === -1) return [];
+        if (nameIndex === -1 || pointsIndex === -1) {
+            console.error("ランキングCSV: 必要なヘッダー (名前, 保有個数など) が見つかりません。");
+            return [];
+        }
 
         const users = [];
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',').map(v => v.trim());
-            if (values.length > pointsIndex && values[nameIndex] && values[pointsIndex]) {
-                users.push({ '名前': values[nameIndex], '保有個数': values[pointsIndex] });
+            const name = values[nameIndex];
+            const count = parseInt(values[pointsIndex], 10);
+            
+            if (name && !isNaN(count)) {
+                users.push({ name, count }); // キー名を'count'に統一
             }
         }
         return users;
@@ -40,13 +43,16 @@ function parseCSV(csv, isRankingData) {
     
     // ホルダー数/フロア価格データ（セル位置: B3, B4）の解析
     else {
+        // INFOシートは行数ベースで特定セルを取得する特殊な処理
         if (lines.length >= 4) { 
+            // 3行目 (インデックス2) の2列目 (インデックス1) が保有者数
             const holderRow = lines[2].split(',').map(v => v.trim()); 
+            // 4行目 (インデックス3) の2列目 (インデックス1) が最安価格
             const floorRow = lines[3].split(',').map(v => v.trim());   
             
             return {
-                holderCount: holderRow[1] || '',
-                floorPrice: floorRow[1] || ''
+                holderCount: holderRow[1] || '---',
+                floorPrice: floorRow[1] || '---'
             };
         }
         return {};
@@ -55,12 +61,14 @@ function parseCSV(csv, isRankingData) {
 
 function classifyUsers(users) {
     const classifiedData = {};
+    // Ranksオブジェクトを初期化
     Object.keys(RANK_DETAILS).forEach(key => { classifiedData[key] = { ...RANK_DETAILS[key], users: [] }; });
 
     users.forEach(user => {
-        const points = parseInt(user['保有個数'], 10); 
-        const name = user['名前'];
-        if (isNaN(points) || !name) return;
+        const count = user.count; // 修正されたキー名
+        const name = user.name;
+        
+        if (isNaN(count) || !name) return;
 
         let rankName = null;
         for (const key in RANK_DETAILS) {
@@ -71,7 +79,7 @@ function classifyUsers(users) {
             }
         }
         if (rankName && classifiedData[rankName]) {
-            classifiedData[rankName].users.push({ name, points });
+            classifiedData[rankName].users.push({ name, count });
         }
     });
     return classifiedData;
@@ -83,10 +91,10 @@ function updateTopInfo(infoData) {
         const priceEl = document.getElementById('floor-price');
 
         if (holderEl && priceEl) { 
-            if (infoData.holderCount) {
+            if (infoData.holderCount && infoData.holderCount !== '---') {
                 holderEl.textContent = infoData.holderCount + '人';
             }
-            if (infoData.floorPrice) {
+            if (infoData.floorPrice && infoData.floorPrice !== '---') {
                 priceEl.textContent = infoData.floorPrice + 'ETH';
             }
         }
@@ -102,12 +110,16 @@ function renderRankBlocks(classifiedData) {
     
     // トップ情報ブロック以外の内容をクリア
     const topBlock = document.querySelector('.info-block-top');
-    if (topBlock) {
-        const childrenToKeep = [topBlock];
-        container.innerHTML = '';
-        childrenToKeep.forEach(child => container.appendChild(child));
-    } else {
-        container.innerHTML = ''; 
+    // Top BlockはHTMLに元から存在するため、それを残してクリアする
+    if (container && topBlock) {
+        // containerの子要素からtopBlockだけを残して他を削除
+        let child = container.lastElementChild;
+        while (child) {
+            if (child !== topBlock) {
+                container.removeChild(child);
+            }
+            child = container.lastElementChild;
+        }
     }
 
     // 定義済みの階級名の順番でブロックを生成
@@ -115,7 +127,9 @@ function renderRankBlocks(classifiedData) {
         const detail = RANK_DETAILS[rankName];
         const users = classifiedData[rankName].users || [];
         
+        // 保有数が多い順にソート
         users.sort((a, b) => b.count - a.count);
+        
         const userListHTML = users.map(user => 
             `<li>${user.name} (${user.count}点)</li>`
         ).join('');
@@ -139,7 +153,10 @@ function renderRankBlocks(classifiedData) {
             </div>
         `;
         
-        container.insertAdjacentHTML('beforeend', rankBlockHTML);
+        // トップ情報ブロックの直後に追加
+        if (container) {
+             container.insertAdjacentHTML('beforeend', rankBlockHTML);
+        }
     }
 }
 
@@ -149,6 +166,8 @@ async function init() {
     // 1. ユーザーランキングデータの取得とレンダリング
     try {
         const rankingResponse = await fetch(RANKING_CSV_URL);
+        if (!rankingResponse.ok) throw new Error(`ランキングデータの取得に失敗: ${rankingResponse.status}`);
+        
         const rankingCsvText = await rankingResponse.text();
         const users = parseCSV(rankingCsvText, true); 
         const classifiedData = classifyUsers(users);
@@ -160,6 +179,8 @@ async function init() {
     // 2. ホルダー数/フロア価格データの取得とトップ表示の更新
     try {
         const infoResponse = await fetch(INFO_CSV_URL);
+        if (!infoResponse.ok) throw new Error(`情報データの取得に失敗: ${infoResponse.status}`);
+        
         const infoCsvText = await infoResponse.text();
         const infoData = parseCSV(infoCsvText, false);
         updateTopInfo(infoData);
