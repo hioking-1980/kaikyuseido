@@ -1,8 +1,10 @@
 // Google Sheetsの公開CSVリンク (最新のGIDを反映)
+// GID=589878966: ユーザーランキングデータ
 const RANKING_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=589878966&single=true&output=csv"; 
+// GID=1072760862: ホルダー数とフロア価格データ
 const INFO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=1072760862&single=true&output=csv"; 
 
-// 階級の定義とデータ
+// 階級の定義とデータ (拡張子をpng/jpgに修正)
 const RANK_DETAILS = {
     "長老": { min: 50, max: Infinity, desc: "最も偉い階級で、とにかく頭を下げなければならない。", img: "階級-06.png" },
     "名主": { min: 40, max: 49, desc: "かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有", img: "階級-08.png" },
@@ -11,6 +13,9 @@ const RANK_DETAILS = {
     "村長": { min: 10, max: 19, desc: "村人から挨拶をされるくらい、ちょっとだけ偉い。", img: "階級-10.png" }
 };
 
+let Ranks = {
+    "長老": [], "名主": [], "領主": [], "しょう屋": [], "村長": []
+};
 
 // --- データ処理関数 (CSVを解析する) ---
 function parseCSV(csv, isRankingData) {
@@ -92,7 +97,8 @@ function updateTopInfo(infoData) {
     }
 }
 
-// --- HTML生成関数 (前回の完全版) ---
+// --- HTML生成関数 ---
+
 function renderRankBlocks(classifiedData) {
     const container = document.getElementById('rank-container');
     
@@ -133,37 +139,3 @@ function renderRankBlocks(classifiedData) {
                     </ul>
                 </div>
             </div>
-        `;
-        
-        container.insertAdjacentHTML('beforeend', rankBlockHTML);
-    }
-}
-
-
-// --- データ取得と初期化 (fetch APIを使用) ---
-async function init() {
-    
-    // 1. ユーザーランキングデータの取得とレンダリング
-    try {
-        const rankingResponse = await fetch(RANKING_CSV_URL);
-        const rankingCsvText = await rankingResponse.text();
-        const users = parseCSV(rankingCsvText, true); 
-        const classifiedData = classifyUsers(users);
-        renderRankBlocks(classifiedData);
-    } catch (error) {
-        console.error("ユーザーランキングデータの処理中にエラーが発生しました:", error);
-    }
-    
-    // 2. ホルダー数/フロア価格データの取得とトップ表示の更新
-    try {
-        const infoResponse = await fetch(INFO_CSV_URL);
-        const infoCsvText = await infoResponse.text();
-        const infoData = parseCSV(infoCsvText, false);
-        updateTopInfo(infoData);
-    } catch (error) {
-        console.error("情報データの処理中にエラーが発生しました:", error);
-    }
-}
-
-// ページロードが完了したらinit関数を実行
-document.addEventListener('DOMContentLoaded', init);
