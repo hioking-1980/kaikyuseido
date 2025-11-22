@@ -1,5 +1,5 @@
-// 【重要】階級ランキングデータのCSV直リンクURL（元のシート、gid=0を想定）
-const USER_RANKING_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=0&single=true&output=csv'; 
+// 【重要】階級ランキングデータのCSV直リンクURLを新しいものに更新
+const USER_RANKING_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=589878966&single=true&output=csv';
 
 // 【重要】ホルダー数フロア価格シートのCSV直リンクURL
 const INFO_DATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=1072760862&single=true&output=csv'; 
