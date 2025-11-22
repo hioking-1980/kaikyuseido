@@ -11,9 +11,6 @@ const RANK_DETAILS = {
     "村長": { min: 10, max: 19, desc: "村人から挨拶をされるくらい、ちょっとだけ偉い。", img: "階級-10.jpg" }
 };
 
-let Ranks = {
-    "長老": [], "名主": [], "領主": [], "しょう屋": [], "村長": []
-};
 
 // --- データ処理関数 (CSVを解析する) ---
 function parseCSV(csv, isRankingData) {
@@ -54,9 +51,8 @@ function parseCSV(csv, isRankingData) {
 }
 
 function classifyUsers(users) {
-    // 既存の classifyUsers ロジック
     const classifiedData = {};
-    Object.keys(RANKS).forEach(key => { classifiedData[key] = { ...RANKS[key], users: [] }; });
+    Object.keys(RANK_DETAILS).forEach(key => { classifiedData[key] = { ...RANK_DETAILS[key], users: [] }; });
 
     users.forEach(user => {
         const points = parseInt(user['保有個数'], 10); 
@@ -64,8 +60,8 @@ function classifyUsers(users) {
         if (isNaN(points) || !name) return;
 
         let rankName = null;
-        for (const key in RANKS) {
-            const detail = RANKS[key];
+        for (const key in RANK_DETAILS) {
+            const detail = RANK_DETAILS[key];
             if (points >= detail.min && (detail.max === Infinity || points <= detail.max)) {
                 rankName = key;
                 break;
@@ -75,12 +71,28 @@ function classifyUsers(users) {
             classifiedData[rankName].users.push({ name, points });
         }
     });
-    // ソートは renderBlocks で行うため、ここではスキップ
     return classifiedData;
 }
 
-// --- HTML生成関数 ---
+function updateTopInfo(infoData) {
+    try {
+        const holderEl = document.getElementById('holder-count');
+        const priceEl = document.getElementById('floor-price');
 
+        if (holderEl && priceEl) { 
+            if (infoData.holderCount) {
+                holderEl.textContent = infoData.holderCount + '人';
+            }
+            if (infoData.floorPrice) {
+                priceEl.textContent = infoData.floorPrice + 'ETH';
+            }
+        }
+    } catch (error) {
+        console.error("情報データの処理中にエラーが発生しました:", error);
+    }
+}
+
+// --- HTML生成関数 (前回の完全版) ---
 function renderRankBlocks(classifiedData) {
     const container = document.getElementById('rank-container');
     
@@ -95,13 +107,13 @@ function renderRankBlocks(classifiedData) {
     }
 
     // 定義済みの階級名の順番でブロックを生成
-    for (const rankName of Object.keys(RANKS)) {
-        const detail = RANKS[rankName];
-        const users = classifiedData[rankName].users || []; // classifiedDataから取得
+    for (const rankName of Object.keys(RANK_DETAILS)) {
+        const detail = RANK_DETAILS[rankName];
+        const users = classifiedData[rankName].users || [];
         
         users.sort((a, b) => b.count - a.count);
         const userListHTML = users.map(user => 
-            `<li>${user.name} (${user.points}点)</li>`
+            `<li>${user.name} (${user.count}点)</li>`
         ).join('');
 
         const listContent = users.length > 0 ? userListHTML : '該当者なし';
@@ -127,24 +139,6 @@ function renderRankBlocks(classifiedData) {
     }
 }
 
-
-function updateTopInfo(infoData) {
-    try {
-        const holderEl = document.getElementById('holder-count');
-        const priceEl = document.getElementById('floor-price');
-
-        if (holderEl && priceEl) { 
-            if (infoData.holderCount) {
-                holderEl.textContent = infoData.holderCount + '人';
-            }
-            if (infoData.floorPrice) {
-                priceEl.textContent = infoData.floorPrice + 'ETH';
-            }
-        }
-    } catch (error) {
-        console.error("情報データの処理中にエラーが発生しました:", error);
-    }
-}
 
 // --- データ取得と初期化 (fetch APIを使用) ---
 async function init() {
