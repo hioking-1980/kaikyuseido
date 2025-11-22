@@ -4,14 +4,14 @@ const USER_RANKING_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT
 // 【重要】ホルダー数フロア価格シートのCSV直リンクURL
 const INFO_DATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=1072760862&single=true&output=csv'; 
 
-// 階級の定義とデータ (拡張子をすべて .png に修正)
+// 階級の定義とデータ (「その他」を削除し、村長のminPointsを1点に修正)
 const RANKS = [
     { name: '長老', minPoints: 50, maxPoints: Infinity, range: '50点以上', image: 'images/階級-06.png', colorClass: 'bg-長老', description: '最も偉い階級で、とにかく頭を下げなければならない。' },
     { name: '名主', minPoints: 40, maxPoints: 49, range: '40〜49点', image: 'images/階級-08.png', colorClass: 'bg-名主', description: 'かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有' },
     { name: '領主', minPoints: 30, maxPoints: 39, range: '30〜39点', image: 'images/階級-07.png', colorClass: 'bg-領主', description: 'とても高貴な位であり、キャビアや高級和牛などをいつも食べている' },
-    { name: 'しょう屋', minPoints: 20, maxPoints: 29, range: '20〜29点', image: 'images/opensea カバビレボタン-09.png', colorClass: 'bg-しょう屋', description: 'かなりいいものを食べれるぐらいの位で豊かな感じ' }, // ファイル名を画像に合わせて修正
-    { name: '村長', minPoints: 10, maxPoints: 19, range: '10〜19点', image: 'images/階級-10.png', colorClass: 'bg-村長', description: '村人から挨拶をされるくらい、ちょっとだけ偉い' },
-    { name: 'その他', minPoints: 1, maxPoints: 9, range: '1〜9点', image: 'images/その他.png', colorClass: 'bg-その他', description: '' }
+    { name: 'しょう屋', minPoints: 20, maxPoints: 29, range: '20〜29点', image: 'images/opensea カバビレボタン-09.png', colorClass: 'bg-しょう屋', description: 'かなりいいものを食べれるぐらいの位で豊かな感じ' },
+    { name: '村長', minPoints: 10, maxPoints: 19, range: '10〜19点', image: 'images/階級-10.png', colorClass: 'bg-村長', description: '村人から挨拶をされるくらい、ちょっとだけ偉い' }
+    // 「その他」の項目は削除されました
 ];
 
 // ************************************************************
