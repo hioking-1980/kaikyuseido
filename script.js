@@ -1,187 +1,163 @@
-// 【重要】階級ランキングデータのCSV直リンクURLを新しいものに更新
-const USER_RANKING_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=589878966&single=true&output=csv';
+// Google Sheetsの公開CSVリンク
+// gid=0 : 階級ランキングデータ
+const RANKING_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0KMku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=0&single=true&output=csv";
+// gid=589878966 : ホルダー数とフロア価格データ
+const INFO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0KMku33fn7zpnusbQhVKa4o6Hb2Ahk_l2StGfAiFS_TbKpUg9ftOXAminMSN/pub?gid=589878966&single=true&output=csv";
 
-// 【重要】ホルダー数フロア価格シートのCSV直リンクURL
-const INFO_DATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=1072760862&single=true&output=csv'; 
+// 階級データと画像ファイル名（アップロードされたファイル名と一致させてください）
+const RANK_DETAILS = {
+    "長老": { min: 50, max: Infinity, desc: "最も偉い階級で、とにかく頭を下げなければならない。", img: "階級-06.jpg" },
+    "名主": { min: 40, max: 49, desc: "かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有", img: "階級-08.jpg" },
+    "領主": { min: 30, max: 39, desc: "とても高貴な位であり、キャビアや高級和牛などをいつも食べている", img: "階級-07.jpg" },
+    "しょう屋": { min: 20, max: 29, desc: "かなりいいものを食べられるくらいの位で豊かな感じ", img: "階級-09.jpg" },
+    "村長": { min: 10, max: 19, desc: "村人から挨拶をされるくらい、ちょっとだけ偉い", img: "階級-10.jpg" },
+    // 1~9点の「その他」階級を追加
+    "その他": { min: 1, max: 9, desc: "これからのカバードビレッジの成長を支える最重要人物たち", img: "kaikyu_placeholder.jpg" } 
+};
 
-// 階級の定義とデータ (「その他」を削除し、村長のminPointsを1点に修正)
-const RANKS = [
-    { name: '長老', minPoints: 50, maxPoints: Infinity, range: '50点以上', image: 'images/階級-06.png', colorClass: 'bg-長老', description: '最も偉い階級で、とにかく頭を下げなければならない。' },
-    { name: '名主', minPoints: 40, maxPoints: 49, range: '40〜49点', image: 'images/階級-08.png', colorClass: 'bg-名主', description: 'かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有' },
-    { name: '領主', minPoints: 30, maxPoints: 39, range: '30〜39点', image: 'images/階級-07.png', colorClass: 'bg-領主', description: 'とても高貴な位であり、キャビアや高級和牛などをいつも食べている' },
-    { name: 'しょう屋', minPoints: 20, maxPoints: 29, range: '20〜29点', image: 'images/shouya-09.png', colorClass: 'bg-しょう屋', description: 'かなりいいものを食べれるぐらいの位で豊かな感じ' },
-    { name: '村長', minPoints: 10, maxPoints: 19, range: '10〜19点', image: 'images/階級-10.png', colorClass: 'bg-村長', description: '村人から挨拶をされるくらい、ちょっとだけ偉い' }
-    // 「その他」の項目は削除されました
-];
+// 階級データを保持するオブジェクト
+let Ranks = {
+    "長老": [], "名主": [], "領主": [], "しょう屋": [], "村長": [], "その他": []
+};
 
-// ************************************************************
-// 以降の function parseCSV, function classifyUsers, function renderRanks, function init は、
-// 以前の回答で提供した内容と全く同じです。コードの欠落を防ぐため、
-// 必ず全ての関数を完全に貼り付けてください。
-// ************************************************************
-
-// 以下に、前回の回答で提供した全ての関数（parseCSV, classifyUsers, renderRanks, init）を
-// 完全に貼り付けてください。今回はコードが長くなるため、途中の関数の記載を省略します。
-
-// ただし、上記RANKS定義内の 'しょう屋' の画像パスは、画像一覧に合わせて
-// 'images/opensea カバビレボタン-09.png' に修正しています。
-
-// **重要: GitHubに貼り付ける際は、前回の回答のすべてのコードを貼り付けてください。**
-
-function parseCSV(csv, isRankingData) {
-    const lines = csv.split('\n').filter(line => line.trim() !== '');
-    if (lines.length === 0) return isRankingData ? [] : {};
+// --- 初期化関数 (データ取得) ---
+function init() {
     
-    // ユーザーランキングデータ（ヘッダー: 名前, 保有個数）の解析
-    if (isRankingData) {
-        const headers = lines[0].split(',').map(h => h.trim());
-        const nameIndex = headers.indexOf('名前');
-        const pointsIndex = headers.indexOf('保有個数');
-        
-        if (nameIndex === -1 || pointsIndex === -1) {
-            console.error("ランキングデータCSVヘッダーに '名前' または '保有個数' が見つかりません。");
-            return [];
-        }
-
-        const users = [];
-        for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(v => v.trim());
-            if (values.length > pointsIndex && values[nameIndex] && values[pointsIndex]) {
-                users.push({ '名前': values[nameIndex], '保有個数': values[pointsIndex] });
-            }
-        }
-        return users;
-    } 
-    
-    // ホルダー数/フロア価格データ（セル位置: B3, B4）の解析
-    else {
-        if (lines.length >= 4) { 
-            const holderRow = lines[2].split(',').map(v => v.trim()); 
-            const floorRow = lines[3].split(',').map(v => v.trim());   
-            
-            return {
-                holderCount: holderRow[1] || '',
-                floorPrice: floorRow[1] || ''
-            };
-        }
-        return {};
-    }
-}
-
-function classifyUsers(users) {
-    const classifiedData = {};
-    RANKS.forEach(rank => {
-        classifiedData[rank.name] = { ...rank, users: [] };
+    // 1. 階級ランキングデータの取得
+    Tabletop.init({
+        key: RANKING_CSV_URL,
+        callback: function(data, tabletop) {
+            processRankingData(data);
+            renderRankBlocks(); // ランキングデータ取得後にブロックを生成
+        },
+        simpleSheet: true // 1行目をヘッダーとして処理
     });
 
-    users.forEach(user => {
-        const points = parseInt(user['保有個数'], 10); 
-        const name = user['名前'];
-        if (isNaN(points) || !name) return;
+    // 2. ホルダー数/フロア価格データの取得
+    Tabletop.init({
+        key: INFO_CSV_URL,
+        callback: function(data, tabletop) {
+            updateTopInfo(data); // トップ情報を更新
+        },
+        simpleSheet: true // 1行目をヘッダーとして処理
+    });
+}
 
-        for (const rank of RANKS) {
-            if (points >= rank.minPoints && points <= rank.maxPoints) {
-                classifiedData[rank.name].users.push({ name, points });
+// --- データ処理関数 ---
+
+/**
+ * ランキングCSVデータを処理し、Ranksオブジェクトに格納する
+ * @param {Array<Object>} data - Tabletopから取得したデータ
+ */
+function processRankingData(data) {
+    // データの最初の行（ヘッダー）はTabletopが使用するため、2行目から処理を開始
+    for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const name = row['氏名'] || row['名前']; 
+        const count = parseInt(row['保有点数'] || row['保有個数'], 10); 
+        
+        if (!name || isNaN(count)) continue;
+
+        let rankName = "その他";
+        for (const key in RANK_DETAILS) {
+            const detail = RANK_DETAILS[key];
+            if (count >= detail.min && (detail.max === Infinity || count <= detail.max)) {
+                rankName = key;
                 break;
             }
         }
-    });
-    Object.values(classifiedData).forEach(rankData => {
-        rankData.users.sort((a, b) => b.points - a.points);
-    });
-    return classifiedData;
-}
 
-function renderRanks(classifiedData) {
-    const container = document.getElementById('rank-container');
-    container.innerHTML = ''; 
-
-    RANKS.forEach(rankDef => {
-        const rankData = classifiedData[rankDef.name];
-        const rankBlock = document.createElement('section');
-        rankBlock.className = 'rank-block';
-
-        const header = document.createElement('div');
-        header.className = `rank-header ${rankData.colorClass}`;
-        header.innerHTML = `
-            <h2>${rankData.name}</h2>
-            <p class="rank-range">${rankData.range}</p>
-        `;
-        rankBlock.appendChild(header);
-
-        const content = document.createElement('div');
-        content.className = 'rank-content';
-
-        const image = document.createElement('img');
-        image.className = `rank-image ${rankData.name}`; 
-        image.src = rankData.image;
-        image.alt = rankData.name;
-        content.appendChild(image);
-
-        if (rankData.description) {
-            const description = document.createElement('p');
-            description.className = 'rank-description';
-            description.textContent = rankData.description;
-            content.appendChild(description);
+        if (Ranks[rankName]) {
+            Ranks[rankName].push({ name, count });
         }
-
-        const userList = document.createElement('ul');
-        userList.className = 'user-list';
-        
-        if (rankData.users.length > 0) {
-            rankData.users.forEach(user => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${user.name} (${user.points}点)`;
-                userList.appendChild(listItem);
-            });
-        } else {
-             const listItem = document.createElement('li');
-             listItem.textContent = '該当者なし';
-             listItem.style.color = '#AAA';
-             userList.appendChild(listItem);
-        }
-        
-        content.appendChild(userList);
-        rankBlock.appendChild(content);
-
-        container.appendChild(rankBlock);
-    });
-}
-
-// データ取得と初期化 (fetch APIを使用)
-async function init() {
-    // 1. ユーザーランキングデータの取得とレンダリング
-    try {
-        const userRankingResponse = await fetch(USER_RANKING_CSV_URL);
-        if (userRankingResponse.ok) {
-            const userCsvText = await userRankingResponse.text();
-            const users = parseCSV(userCsvText, true); // true: ランキングデータ
-            const classifiedData = classifyUsers(users);
-            renderRanks(classifiedData);
-        } else {
-            console.error("ユーザーランキングデータの取得に失敗しました。");
-        }
-    } catch (error) {
-        console.error("ユーザーランキングデータの処理中にエラーが発生しました:", error);
     }
-    
-    // 2. ホルダー数/フロア価格データの取得とトップ表示の更新
-    try {
-        const infoDataResponse = await fetch(INFO_DATA_CSV_URL);
-        if (infoDataResponse.ok) {
-            const infoCsvText = await infoDataResponse.text();
-            const infoData = parseCSV(infoCsvText, false); // false: 情報データ
-            
-            if (infoData.holderCount && infoData.floorPrice) {
-                document.getElementById('holder-count').textContent = infoData.holderCount + '人';
-                document.getElementById('floor-price').textContent = infoData.floorPrice + 'ETH';
+}
+
+/**
+ * ホルダー数とフロア価格のCSVデータを処理し、トップ情報を更新する
+ * @param {Array<Object>} data - Tabletopから取得したデータ
+ */
+function updateTopInfo(data) {
+    if (data.length > 0) {
+        // スプレッドシートの構造に基づき、値を適切に取得します。
+        // （ここでは、2行目以降のデータから値を取得するロジックを想定）
+        
+        // データの1行目（インデックス0）が保有者数の値を持つと仮定
+        let holderCount = data[0]['保有者数'] || data[0]['名前'] || '---'; 
+        // データの2行目（インデックス1）が最安価格の値を持つと仮定
+        let floorPrice = data[1] ? (data[1]['最安価格'] || data[1]['名前'] || '---') : '---';
+
+        // index.htmlにIDが復元されているため、ここで要素が見つかる
+        const holderEl = document.getElementById('holder-count');
+        const priceEl = document.getElementById('floor-price');
+
+        if (holderEl && priceEl) {
+            // 値がCSVから取得できた場合のみ更新
+            if (holderCount && holderCount !== '---') {
+                holderEl.textContent = holderCount + '人';
             }
-        } else {
-            console.error("情報データの取得に失敗しました。");
+            if (floorPrice && floorPrice !== '---') {
+                priceEl.textContent = floorPrice + 'ETH';
+            }
         }
-    } catch (error) {
-        console.error("情報データの処理中にエラーが発生しました:", error);
     }
 }
 
-window.addEventListener('DOMContentLoaded', init);
+// --- HTML生成関数 ---
+
+/**
+ * 階級データに基づいてHTMLブロックを生成し、メインコンテナに追加する
+ */
+function renderRankBlocks() {
+    const container = document.getElementById('rank-container');
+    
+    // 描画前に、トップ情報ブロック以外の内容をクリア
+    const topBlock = document.querySelector('.info-block-top');
+    if (topBlock) {
+        // トップブロックを一時的に保持し、再挿入することでDOM上の位置を維持
+        const childrenToKeep = [topBlock];
+        container.innerHTML = '';
+        childrenToKeep.forEach(child => container.appendChild(child));
+    } else {
+        container.innerHTML = ''; 
+    }
+
+    // 定義済みの階級名の順番でブロックを生成
+    for (const rankName of Object.keys(RANK_DETAILS)) {
+        const detail = RANK_DETAILS[rankName];
+        const users = Ranks[rankName] || [];
+        
+        // ユーザーリストのHTMLを生成
+        const userListHTML = users.map(user => 
+            `<li>${user.name} (${user.count}点)</li>`
+        ).join('');
+
+        // 該当者がいない場合のメッセージ
+        const listContent = users.length > 0 ? userListHTML : '該当者なし';
+        
+        // 範囲表示のテキストを生成
+        const rangeText = `${detail.min}${detail.max === Infinity ? '点以上' : '〜' + detail.max + '点'}`;
+
+        // 階級ブロック全体を生成
+        const rankBlockHTML = `
+            <div class="rank-block">
+                <div class="rank-header bg-${rankName}">
+                    <h2>${rankName}</h2>
+                    <div class="rank-range">${rangeText}</div>
+                </div>
+                <div class="rank-content">
+                    <img src="images/${detail.img}" alt="${rankName}の画像" class="rank-image ${rankName}">
+                    <p class="rank-description">${detail.desc}</p>
+                    <ul class="user-list">
+                        ${listContent}
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', rankBlockHTML);
+    }
+}
+
+// ページロードが完了したらinit関数を実行
+document.addEventListener('DOMContentLoaded', init);
