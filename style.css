@@ -7,14 +7,14 @@ body {
     background-color: #F8F8F8; 
     color: #333;
     line-height: 1.6;
-    overflow-x: hidden; /* 横方向のスクロールを禁止 */
+    overflow-x: hidden; /* ★修正: 横方向のスクロールを禁止 */
 }
 
 /* --- ヘッダー画像とトップ情報ブロックの調整 --- */
 
 /* ヘッダー全体 (画像格納用) の調整 */
 .header {
-    width: 100%; /* 親要素の幅いっぱいに設定 */
+    width: 100%; 
     max-width: 100%;
     padding: 0; /* 余白をゼロにして画面の端まで広げる */
     margin: 0;
@@ -28,25 +28,24 @@ body {
     display: block; 
 }
 
-/* トップ情報ブロック（保有者数、ボタンなど）を画像の下に配置 */
+/* ★修正: トップ情報ブロック（保有者数、ボタンなど）の調整 */
 .info-block-top {
-    padding: 20px 15px; /* 上下左右に余白 */
-    text-align: center;
+    padding: 20px 15px;
+    text-align: center; 
+    margin-top: -15px; /* 画像と情報の間隔を微調整 */
 }
 
-/* 以前の .info-block のスタイルを新しいクラスに適用 */
-.info-block-top p {
-    margin: 5px 0;
-    font-size: 16px;
-    font-weight: 700;
-}
-
-/* 既存のタイトルやサブタイトルのスタイルを再利用 */
 .info-block-top .subtitle {
     font-size: 16px;
     font-weight: 700;
     color: #555;
     margin-bottom: 20px;
+}
+
+.info-block-top p {
+    margin: 5px 0;
+    font-size: 16px;
+    font-weight: 700;
 }
 
 .info-block-top .large-number {
@@ -64,7 +63,7 @@ body {
 
 /* OpenSea ボタンの再現 */
 .opensea-button {
-    display: inline-block;
+    display: inline-block; 
     background-color: #00BFFF; /* 鮮やかな青色 */
     color: white;
     font-size: 20px;
@@ -142,7 +141,6 @@ body {
 .rank-image.領主 { border-color: #FFA500; }
 .rank-image.しょう屋 { border-color: #3CB371; }
 .rank-image.村長 { border-color: #4169E1; }
-/* その他は削除されたため、スタイルも不要 */
 
 .rank-description {
     font-size: 14px;
@@ -179,6 +177,8 @@ body {
 .bg-領主 { background-color: #DAA520; }
 .bg-しょう屋 { background-color: #3CB371; }
 .bg-村長 { background-color: #FF8C00; }
+.bg-その他 { background-color: #DC143C; } /* 1~9点の「その他」も追加 */
+
 
 /* デスクトップ表示用（最大幅を調整） */
 @media (min-width: 768px) {
