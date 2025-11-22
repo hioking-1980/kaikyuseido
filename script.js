@@ -1,20 +1,33 @@
 // 【重要】階級ランキングデータのCSV直リンクURL（元のシート、gid=0を想定）
 const USER_RANKING_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=0&single=true&output=csv'; 
 
-// 【重要】ホルダー数フロア価格シートのCSV直リンクURL（今回ご提示いただいたURL）
+// 【重要】ホルダー数フロア価格シートのCSV直リンクURL
 const INFO_DATA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTw7lXTJViUKW_BaGSR0Kmku33fn7zpnusbQhVKa4o6Hb2Ahk_I2StGfAiFS_TbKpUg9ft0XAmiNMSN/pub?gid=1072760862&single=true&output=csv'; 
 
-// 階級の定義とデータ (確定版)
+// 階級の定義とデータ (拡張子をすべて .png に修正)
 const RANKS = [
-    { name: '長老', minPoints: 50, maxPoints: Infinity, range: '50点以上', image: 'images/階級-06.jpg', colorClass: 'bg-長老', description: '最も偉い階級で、とにかく頭を下げなければならない。' },
-    { name: '名主', minPoints: 40, maxPoints: 49, range: '40〜49点', image: 'images/階級-08.jpg', colorClass: 'bg-名主', description: 'かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有' },
-    { name: '領主', minPoints: 30, maxPoints: 39, range: '30〜39点', image: 'images/階級-07.jpg', colorClass: 'bg-領主', description: 'とても高貴な位であり、キャビアや高級和牛などをいつも食べている' },
-    { name: 'しょう屋', minPoints: 20, maxPoints: 29, range: '20〜29点', image: 'images/階級-09.jpg', colorClass: 'bg-しょう屋', description: 'かなりいいものを食べれるぐらいの位で豊かな感じ' },
-    { name: '村長', minPoints: 10, maxPoints: 19, range: '10〜19点', image: 'images/階級-10.jpg', colorClass: 'bg-村長', description: '村人から挨拶をされるくらい、ちょっとだけ偉い' },
+    { name: '長老', minPoints: 50, maxPoints: Infinity, range: '50点以上', image: 'images/階級-06.png', colorClass: 'bg-長老', description: '最も偉い階級で、とにかく頭を下げなければならない。' },
+    { name: '名主', minPoints: 40, maxPoints: 49, range: '40〜49点', image: 'images/階級-08.png', colorClass: 'bg-名主', description: 'かなりの位の高さで、いつもフカフカの椅子に座ることができる権利を保有' },
+    { name: '領主', minPoints: 30, maxPoints: 39, range: '30〜39点', image: 'images/階級-07.png', colorClass: 'bg-領主', description: 'とても高貴な位であり、キャビアや高級和牛などをいつも食べている' },
+    { name: 'しょう屋', minPoints: 20, maxPoints: 29, range: '20〜29点', image: 'images/opensea カバビレボタン-09.png', colorClass: 'bg-しょう屋', description: 'かなりいいものを食べれるぐらいの位で豊かな感じ' }, // ファイル名を画像に合わせて修正
+    { name: '村長', minPoints: 10, maxPoints: 19, range: '10〜19点', image: 'images/階級-10.png', colorClass: 'bg-村長', description: '村人から挨拶をされるくらい、ちょっとだけ偉い' },
     { name: 'その他', minPoints: 1, maxPoints: 9, range: '1〜9点', image: 'images/その他.png', colorClass: 'bg-その他', description: '' }
 ];
 
-// CSVデータを解析し、データ形式に応じて分類して返す関数
+// ************************************************************
+// 以降の function parseCSV, function classifyUsers, function renderRanks, function init は、
+// 以前の回答で提供した内容と全く同じです。コードの欠落を防ぐため、
+// 必ず全ての関数を完全に貼り付けてください。
+// ************************************************************
+
+// 以下に、前回の回答で提供した全ての関数（parseCSV, classifyUsers, renderRanks, init）を
+// 完全に貼り付けてください。今回はコードが長くなるため、途中の関数の記載を省略します。
+
+// ただし、上記RANKS定義内の 'しょう屋' の画像パスは、画像一覧に合わせて
+// 'images/opensea カバビレボタン-09.png' に修正しています。
+
+// **重要: GitHubに貼り付ける際は、前回の回答のすべてのコードを貼り付けてください。**
+
 function parseCSV(csv, isRankingData) {
     const lines = csv.split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) return isRankingData ? [] : {};
@@ -42,12 +55,10 @@ function parseCSV(csv, isRankingData) {
     
     // ホルダー数/フロア価格データ（セル位置: B3, B4）の解析
     else {
-        // スプレッドシートのB3, B4の値を取得 (CSVでは3行目, 4行目の2列目)
         if (lines.length >= 4) { 
-            const holderRow = lines[2].split(',').map(v => v.trim()); // B3の行
-            const floorRow = lines[3].split(',').map(v => v.trim());   // B4の行
+            const holderRow = lines[2].split(',').map(v => v.trim()); 
+            const floorRow = lines[3].split(',').map(v => v.trim());   
             
-            // B列（インデックス1）の値を取得
             return {
                 holderCount: holderRow[1] || '',
                 floorPrice: floorRow[1] || ''
@@ -57,7 +68,6 @@ function parseCSV(csv, isRankingData) {
     }
 }
 
-// ユーザーデータを階級に分類する関数
 function classifyUsers(users) {
     const classifiedData = {};
     RANKS.forEach(rank => {
@@ -82,7 +92,6 @@ function classifyUsers(users) {
     return classifiedData;
 }
 
-// HTML要素を生成して挿入する関数 (完全版)
 function renderRanks(classifiedData) {
     const container = document.getElementById('rank-container');
     container.innerHTML = ''; 
@@ -164,7 +173,6 @@ async function init() {
             const infoData = parseCSV(infoCsvText, false); // false: 情報データ
             
             if (infoData.holderCount && infoData.floorPrice) {
-                // HTML要素を更新
                 document.getElementById('holder-count').textContent = infoData.holderCount + '人';
                 document.getElementById('floor-price').textContent = infoData.floorPrice + 'ETH';
             }
