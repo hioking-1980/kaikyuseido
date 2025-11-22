@@ -7,42 +7,59 @@ body {
     background-color: #F8F8F8; 
     color: #333;
     line-height: 1.6;
+    overflow-x: hidden; /* 横方向のスクロールを禁止 */
 }
 
-/* ヘッダーセクション */
+/* --- ヘッダー画像とトップ情報ブロックの調整 --- */
+
+/* ヘッダー全体 (画像格納用) の調整 */
 .header {
-    padding: 20px;
+    width: 100%; /* 親要素の幅いっぱいに設定 */
+    max-width: 100%;
+    padding: 0; /* 余白をゼロにして画面の端まで広げる */
+    margin: 0;
     text-align: center;
 }
 
-.header h1 {
-    font-size: 28px;
-    font-weight: 900;
-    margin-bottom: 5px;
-    color: #333;
+/* ヘッダー画像のスタイル */
+.header-image {
+    width: 100%; /* 親要素の幅いっぱいに広げる */
+    height: auto; 
+    display: block; 
 }
 
-.header .subtitle {
+/* トップ情報ブロック（保有者数、ボタンなど）を画像の下に配置 */
+.info-block-top {
+    padding: 20px 15px; /* 上下左右に余白 */
+    text-align: center;
+}
+
+/* 以前の .info-block のスタイルを新しいクラスに適用 */
+.info-block-top p {
+    margin: 5px 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* 既存のタイトルやサブタイトルのスタイルを再利用 */
+.info-block-top .subtitle {
     font-size: 16px;
     font-weight: 700;
     color: #555;
     margin-bottom: 20px;
 }
 
-.info-block {
-    margin: 15px 0;
-}
-
-.info-block p {
-    margin: 5px 0;
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.info-block .large-number {
+.info-block-top .large-number {
     font-size: 20px;
     font-weight: 900;
     color: #000;
+}
+
+.description-text {
+    font-size: 14px;
+    color: #555;
+    margin-top: 10px;
+    padding: 0 15px;
 }
 
 /* OpenSea ボタンの再現 */
@@ -55,7 +72,6 @@ body {
     text-decoration: none;
     padding: 15px 30px;
     margin: 20px auto;
-    /* 大きな角丸の再現 */
     border-radius: 50px; 
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     text-align: center;
@@ -66,14 +82,8 @@ body {
     opacity: 0.9;
 }
 
-.description-text {
-    font-size: 14px;
-    color: #555;
-    margin-top: 10px;
-    padding: 0 15px;
-}
 
-/* 階級コンテナとブロック */
+/* --- 階級コンテナとブロック --- */
 #rank-container {
     padding: 10px;
     display: flex;
@@ -86,7 +96,6 @@ body {
     border-radius: 12px;
     padding: 0;
     overflow: hidden;
-    /* 控えめなbox-shadowの再現 */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
 }
 
@@ -128,12 +137,12 @@ body {
 }
 
 /* 階級画像ごとのボーダー色の指定 */
-.rank-image.長老 { border-color: #FFD700; /* 黄色 */ }
-.rank-image.名主 { border-color: #4169E1; /* 青 */ }
-.rank-image.領主 { border-color: #FFA500; /* オレンジ */ }
-.rank-image.しょう屋 { border-color: #3CB371; /* 緑 */ }
-.rank-image.村長 { border-color: #4169E1; /* 濃い青 */ }
-.rank-image.その他 { border-color: #DC143C; /* 赤 */ }
+.rank-image.長老 { border-color: #FFD700; }
+.rank-image.名主 { border-color: #4169E1; }
+.rank-image.領主 { border-color: #FFA500; }
+.rank-image.しょう屋 { border-color: #3CB371; }
+.rank-image.村長 { border-color: #4169E1; }
+/* その他は削除されたため、スタイルも不要 */
 
 .rank-description {
     font-size: 14px;
@@ -170,16 +179,13 @@ body {
 .bg-領主 { background-color: #DAA520; }
 .bg-しょう屋 { background-color: #3CB371; }
 .bg-村長 { background-color: #FF8C00; }
-.bg-その他 { background-color: #DC143C; }
 
-/* デスクトップ表示用（最小限の調整） */
+/* デスクトップ表示用（最大幅を調整） */
 @media (min-width: 768px) {
-    .header {
+    /* サイト全体の表示幅をデスクトップでも適度な幅に制限し、中央寄せにする */
+    #rank-container, .info-block-top {
         max-width: 600px;
-        margin: 0 auto;
-    }
-    #rank-container {
-        max-width: 800px;
-        margin: 0 auto;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
